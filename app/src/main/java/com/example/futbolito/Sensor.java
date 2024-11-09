@@ -37,6 +37,7 @@ public class Sensor extends View implements SensorEventListener {
     // Puntuación
     private int counterPlayer1 = 0;
     private int counterPlayer2 = 0;
+    private boolean isPlayerOneTurn = true;
 
     // Contador
     private int counter = 0;
@@ -129,14 +130,6 @@ public class Sensor extends View implements SensorEventListener {
         goalPaint.setStyle(Paint.Style.STROKE);
         goalPaint.setStrokeWidth(5);
 
-        float goalTop = topBoundary + (getHeight() / 2) - 10;
-        float goalBottom = bottomBoundary - (getHeight() / 2) + 10;
-        float goalLeft = BORDER_SIZE + 100;
-        float goalRight = BORDER_SIZE;
-
-// Dibujar el rectángulo que representa el área de gol izquierda
-        canvas.drawRect(goalRight, goalTop, goalLeft, goalBottom, goalPaint);
-
         invalidate();  // Redibuja la vista
     }
 
@@ -189,18 +182,16 @@ public class Sensor extends View implements SensorEventListener {
             speedY = 0;
         }
 
-        if (isGoalLeft()) {
-            // Gol en la portería izquierda
+        if (isGoalLeft() && !isPlayerOneTurn) { // Gol de jugador 2 en Porteria izquierda
             resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
-            counterPlayer1++;            // Incrementar el contador o registrar el gol
+            counterPlayer1++;     // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
             // Puedes añadir efectos de sonido o alguna animación aquí
         }
 
-        if (isGoalRight()) {
-            // Gol en la portería derecha
+        if (isGoalRight() && isPlayerOneTurn) { // Gol de jugador 1 en Porteria derecha
             resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
-            counterPlayer2++;            // Incrementar el contador o registrar el gol
+            counterPlayer2++;     // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
             // Puedes añadir efectos de sonido o alguna animación aquí
         }
@@ -404,23 +395,13 @@ public class Sensor extends View implements SensorEventListener {
     }
 
     private boolean isGoalLeft() {
-        float goalTop = topBoundary + (getHeight() / 2) - 10;
-        float goalBottom = bottomBoundary - (getHeight() / 2) + 10;
-        float goalLeft = BORDER_SIZE + 100;
-
         // Verificar si la esfera está dentro del área de la portería izquierda
-        return (posX <= goalLeft) &&  // Está en el rango horizontal de la portería
-                (posY >= goalTop) && (posY <= goalBottom) && (posX >= BORDER_SIZE);
+        return (posX <= BORDER_SIZE + 50);
     }
 
     private boolean isGoalRight() {
-        float goalTop = topBoundary + (getHeight() / 2) - 10;
-        float goalBottom = bottomBoundary - (getHeight() / 2) + 10;
-        float goalRight = getWidth() - BORDER_SIZE - 100;
-
         // Verificar si la esfera está dentro del área de la portería derecha
-        return (posX + CIRCLE_RADIUS >= goalRight) &&  // Está en el rango horizontal de la portería
-                (posY >= goalTop) && (posY <= goalBottom);
+        return (posX >= getWidth() - BORDER_SIZE - 50);
     }
 
 
