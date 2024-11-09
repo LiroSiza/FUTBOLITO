@@ -4,14 +4,18 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.view.View;
 
+import androidx.core.content.res.ResourcesCompat;
+
 public class Sensor extends View implements SensorEventListener {
 
     private Paint paint;
+    private Paint counterPaint;
     private float posX, posY;
     private float speedX = 0, speedY = 0;
     private SensorManager sensorManager;
@@ -19,6 +23,7 @@ public class Sensor extends View implements SensorEventListener {
     private static final float CIRCLE_RADIUS = 25;
     private static final float BORDER_SIZE = 50;
     private static final float FRICTION = 0.9f;
+    private static final int TIME_LIMIT = 120;
 
     // Límites del campo de juego
     private float leftBoundary, rightBoundary, topBoundary, bottomBoundary;
@@ -34,6 +39,14 @@ public class Sensor extends View implements SensorEventListener {
         // Inicializa la pintura para el círculo
         paint = new Paint();
         paint.setColor(Color.BLUE);
+
+        // Inicializa el Paint para el contador con fuente personalizada
+        counterPaint = new Paint();
+        counterPaint.setColor(Color.WHITE);
+        counterPaint.setTextSize(50);
+        // Cargar la fuente personalizada desde res/font
+        Typeface typeface = ResourcesCompat.getFont(context, R.font.slackey_regular);
+        counterPaint.setTypeface(typeface);  // Aplica la fuente
 
         // Configura el SensorManager y el acelerómetro
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -62,10 +75,7 @@ public class Sensor extends View implements SensorEventListener {
         canvas.drawCircle(posX, posY, CIRCLE_RADIUS, paint);
 
         // Dibuja el contador en la pantalla
-        Paint counterPaint = new Paint();
-        counterPaint.setColor(Color.WHITE);
-        counterPaint.setTextSize(60);
-        canvas.drawText("Tiempo: " + counter, 50, 100, counterPaint);
+        canvas.drawText("Tiempo: " + counter, (getWidth()/2)-150, 75, counterPaint);
 
         // Actualiza la posición con los límites de la pantalla
         posX = Math.max(CIRCLE_RADIUS, Math.min(posX, getWidth() - CIRCLE_RADIUS));
@@ -163,6 +173,9 @@ public class Sensor extends View implements SensorEventListener {
                         Thread.sleep(1000);  // Espera 1 segundo
                         counter++;  // Incrementa el contador
                         postInvalidate();  // Actualiza la vista
+                        if (counter == TIME_LIMIT) { // Terminar juego
+                            isCounting = false;
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
