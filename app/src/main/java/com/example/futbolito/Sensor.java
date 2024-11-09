@@ -1,5 +1,6 @@
 package com.example.futbolito;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -27,7 +28,7 @@ public class Sensor extends View implements SensorEventListener {
     private static final float CIRCLE_RADIUS = 25;
     private static final float BORDER_SIZE = 50;
     private static final float FRICTION = 0.9f;
-    private static final int TIME_LIMIT = 60;
+    private static final int TIME_LIMIT = 3;
 
     // Lista de obstáculos dentro del campo
     private List<Obstacle> obstacles = new ArrayList<>();
@@ -254,8 +255,12 @@ public class Sensor extends View implements SensorEventListener {
 
                             // Aquí se lanza la nueva actividad final con los datos extra
                             Intent intent = new Intent(getContext(), GameOver.class);
-                            intent.putExtra("player_score", counterPlayer);  // Puntos de jugador 1
+                            intent.putExtra("player_score", counterPlayer);  // Puntos del jugador
+                            intent.putExtra("time_limit", TIME_LIMIT);  // Puntos del jugador
                             getContext().startActivity(intent);  // Inicia la actividad
+
+                            // Termina la actividad actual
+                            ((Activity) getContext()).finish();
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
