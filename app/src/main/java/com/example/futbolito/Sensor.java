@@ -12,6 +12,9 @@ import android.view.View;
 
 import androidx.core.content.res.ResourcesCompat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Sensor extends View implements SensorEventListener {
 
     private Paint paint;
@@ -24,6 +27,9 @@ public class Sensor extends View implements SensorEventListener {
     private static final float BORDER_SIZE = 50;
     private static final float FRICTION = 0.9f;
     private static final int TIME_LIMIT = 120;
+
+    // Lista de obstáculos dentro del campo
+    private List<Obstacle> obstacles = new ArrayList<>();
 
     // Límites del campo de juego
     private float leftBoundary, rightBoundary, topBoundary, bottomBoundary;
@@ -77,6 +83,35 @@ public class Sensor extends View implements SensorEventListener {
         // Dibuja el contador en la pantalla
         canvas.drawText("Tiempo: " + counter, (getWidth()/2)-150, 75, counterPaint);
 
+        // Dibuja los obstáculos
+        Paint obstaclePaint = new Paint();
+        obstaclePaint.setColor(Color.RED);
+        for (Obstacle obstacle : obstacles) {
+            switch (obstacle.getShape()) {
+                case Obstacle.SHAPE_CIRCLE:
+                    canvas.drawCircle(obstacle.getX(), obstacle.getY(), obstacle.getSize(), obstaclePaint);
+                    break;
+                case Obstacle.SHAPE_HORIZONTAL_BAR:
+                    canvas.drawRect(
+                            obstacle.getX() - obstacle.getSize() / 2,
+                            obstacle.getY() - 10,
+                            obstacle.getX() + obstacle.getSize() / 2,
+                            obstacle.getY() + 10,
+                            obstaclePaint
+                    );
+                    break;
+                case Obstacle.SHAPE_VERTICAL_BAR:
+                    canvas.drawRect(
+                            obstacle.getX() - 10,
+                            obstacle.getY() - obstacle.getSize() / 2,
+                            obstacle.getX() + 10,
+                            obstacle.getY() + obstacle.getSize() / 2,
+                            obstaclePaint
+                    );
+                    break;
+            }
+        }
+
         // Actualiza la posición con los límites de la pantalla
         posX = Math.max(CIRCLE_RADIUS, Math.min(posX, getWidth() - CIRCLE_RADIUS));
         posY = Math.max(CIRCLE_RADIUS, Math.min(posY, getHeight() - CIRCLE_RADIUS));
@@ -105,6 +140,9 @@ public class Sensor extends View implements SensorEventListener {
         // Actualiza la posición del balón
         posX += speedX;
         posY += speedY;
+
+        // Verificar colisiones con obstáculos
+        checkCollisions();
 
         // Detección de colisiones con las líneas de delimitación
 
@@ -143,6 +181,9 @@ public class Sensor extends View implements SensorEventListener {
         rightBoundary = w - BORDER_SIZE;
         topBoundary = 2 * BORDER_SIZE;
         bottomBoundary = h - BORDER_SIZE;
+
+        // Generar obstáculos aleatoriamente
+        generateObstacles();
     }
 
     @Override
@@ -192,4 +233,96 @@ public class Sensor extends View implements SensorEventListener {
             counterThread.interrupt();
         }
     }
+
+    private void generateObstacles() {
+        // Crear y agregar obstáculos
+        Obstacle obstacle1 = new Obstacle(Obstacle.SHAPE_CIRCLE, 200, 300, 40);
+        Obstacle obstacle2 = new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, 400, 500, 100);
+        Obstacle obstacle3 = new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, 600, 700, 80);
+
+        obstacles.add(obstacle1);
+        obstacles.add(obstacle2);
+        obstacles.add(obstacle3);
+
+    }
+
+    private void checkCollisions() {
+        for (Obstacle obstacle : obstacles) {
+            switch (obstacle.getShape()) {
+                case Obstacle.SHAPE_CIRCLE:
+                    handleCircleCollision(obstacle);
+                    break;
+                case Obstacle.SHAPE_HORIZONTAL_BAR:
+                    handleHorizontalBarCollision(obstacle);
+                    break;
+                case Obstacle.SHAPE_VERTICAL_BAR:
+                    handleVerticalBarCollision(obstacle);
+                    break;
+            }
+        }
+    }
+
+    private void handleCircleCollision(Obstacle obstacle) {
+        float dx = posX - obstacle.getX();
+        float dy = posY - obstacle.getY();
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        float minDistance = CIRCLE_RADIUS + obstacle.getSize();
+
+        // Si hay colisión
+        if (distance < minDistance) {
+            // Reposicionar la pelota fuera del obstáculo
+            float overlap = minDistance - distance;
+            posX += (dx / distance) * overlap;
+            posY += (dy / distance) * overlap;
+
+            // Invertir la velocidad
+            speedX = -speedX * 0.5f;  // Reducir la velocidad al chocar
+            speedY = -speedY * 0.5f;
+        }
+    }
+
+    private void handleHorizontalBarCollision(Obstacle obstacle) {
+        float left = obstacle.getX() - obstacle.getSize() / 2;
+        float right = obstacle.getX() + obstacle.getSize() / 2;
+        float top = obstacle.getY() - 10;
+        float bottom = obstacle.getY() + 10;
+
+        // Comprobar si la pelota está colisionando con la barra
+        if (posX + CIRCLE_RADIUS > left && posX - CIRCLE_RADIUS < right &&
+                posY + CIRCLE_RADIUS > top && posY - CIRCLE_RADIUS < bottom) {
+
+            // Ajustar la posición fuera de la barra
+            if (posY < obstacle.getY()) {
+                posY = top - CIRCLE_RADIUS;
+            } else {
+                posY = bottom + CIRCLE_RADIUS;
+            }
+
+            // Invertir la velocidad vertical
+            speedY = -speedY * 0.5f;
+        }
+    }
+
+    private void handleVerticalBarCollision(Obstacle obstacle) {
+        float left = obstacle.getX() - 10;
+        float right = obstacle.getX() + 10;
+        float top = obstacle.getY() - obstacle.getSize() / 2;
+        float bottom = obstacle.getY() + obstacle.getSize() / 2;
+
+        // Comprobar si la pelota está colisionando con la barra
+        if (posX + CIRCLE_RADIUS > left && posX - CIRCLE_RADIUS < right &&
+                posY + CIRCLE_RADIUS > top && posY - CIRCLE_RADIUS < bottom) {
+
+            // Ajustar la posición fuera de la barra
+            if (posX < obstacle.getX()) {
+                posX = left - CIRCLE_RADIUS;
+            } else {
+                posX = right + CIRCLE_RADIUS;
+            }
+
+            // Invertir la velocidad horizontal
+            speedX = -speedX * 0.5f;
+        }
+    }
+
 }
