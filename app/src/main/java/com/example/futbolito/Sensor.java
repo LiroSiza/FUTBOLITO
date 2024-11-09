@@ -16,8 +16,13 @@ public class Sensor extends View implements SensorEventListener {
     private float speedX = 0, speedY = 0;
     private SensorManager sensorManager;
     private android.hardware.Sensor accelerometer;
-    private static final float CIRCLE_RADIUS = 50;
+    private static final float CIRCLE_RADIUS = 25;
+    private static final float BORDER_SIZE = 50;
     private static final float FRICTION = 0.9f;
+
+    // Límites del campo de juego
+    private float leftBoundary, rightBoundary, topBoundary, bottomBoundary;
+
 
     public Sensor(Context context) {
         super(context);
@@ -30,14 +35,27 @@ public class Sensor extends View implements SensorEventListener {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
-
-        // Inicializa la posición al centro de la pantalla
-        posX = getWidth() / 2;
-        posY = getHeight() / 2;
     }
 
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        // Dibuja las áreas fuera de los límites del campo con relleno de color
+        Paint fillPaint = new Paint();
+        fillPaint.setColor(Color.GRAY);
+        fillPaint.setStyle(Paint.Style.FILL);
+
+        // Área izquierda (desde el borde izquierdo de la pantalla hasta la línea izquierda)
+        canvas.drawRect(0, 0, leftBoundary, getHeight(), fillPaint);
+
+        // Área derecha (desde la línea derecha hasta el borde derecho de la pantalla)
+        canvas.drawRect(rightBoundary, 0, getWidth(), getHeight(), fillPaint);
+
+        // Área superior (desde el borde superior de la pantalla hasta la línea superior)
+        canvas.drawRect(0, 0, getWidth(), topBoundary, fillPaint);
+
+        // Área inferior (desde la línea inferior hasta el borde inferior de la pantalla)
+        canvas.drawRect(0, bottomBoundary, getWidth(), getHeight(), fillPaint);
 
         // Dibuja la circunferencia
         canvas.drawCircle(posX, posY, CIRCLE_RADIUS, paint);
@@ -67,41 +85,49 @@ public class Sensor extends View implements SensorEventListener {
         if (Math.abs(speedX) < 0.1f) speedX = 0;
         if (Math.abs(speedY) < 0.1f) speedY = 0;
 
-        // Actualiza la posición
+        // Actualiza la posición del balón
         posX += speedX;
         posY += speedY;
 
-        // Verifica colisiones con los bordes y ajusta la posición y velocidad
+        // Detección de colisiones con las líneas de delimitación
 
-        // Comprobación del límite izquierdo (borde izquierdo de la pantalla)
-        if (posX <= CIRCLE_RADIUS) {
-            // Si la posición x del círculo está fuera del límite izquierdo, se ajusta al borde
-            posX = CIRCLE_RADIUS;
+        // Límite izquierdo
+        if (posX <= leftBoundary + CIRCLE_RADIUS) {
+            posX = leftBoundary + CIRCLE_RADIUS;
+            speedX = 0;
+        }
+        // Límite derecho
+        else if (posX >= rightBoundary - CIRCLE_RADIUS) {
+            posX = rightBoundary - CIRCLE_RADIUS;
             speedX = 0;
         }
 
-        // Comprobación del límite derecho (borde derecho de la pantalla)
-        else if (posX >= getWidth() - CIRCLE_RADIUS) {
-            // Si la posición x del círculo está fuera del límite derecho, se ajusta al borde
-            posX = getWidth() - CIRCLE_RADIUS;
-            speedX = 0;
-        }
-
-        // Comprobación del límite superior (borde superior de la pantalla)
-        if (posY <= CIRCLE_RADIUS) {
-            // Si la posición y del círculo está fuera del límite superior, se ajusta al borde
-            posY = CIRCLE_RADIUS;
+        // Límite superior
+        if (posY <= topBoundary + CIRCLE_RADIUS) {
+            posY = topBoundary + CIRCLE_RADIUS;
             speedY = 0;
         }
-
-        // Comprobación del límite inferior (borde inferior de la pantalla)
-        else if (posY >= getHeight() - CIRCLE_RADIUS) {
-            // Si la posición y del círculo está fuera del límite inferior, se ajusta al borde
-            posY = getHeight() - CIRCLE_RADIUS;
+        // Límite inferior
+        else if (posY >= bottomBoundary - CIRCLE_RADIUS) {
+            posY = bottomBoundary - CIRCLE_RADIUS;
             speedY = 0;
         }
     }
 
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {  // Cuando se cambia el tamaño de la vista
+        super.onSizeChanged(w, h, oldw, oldh);
+        // Inicializa la posición al centro de la pantalla
+        posX = (w / 2) - (BORDER_SIZE/2);
+        posY = h / 2;
+
+        // Definir las líneas de delimitación del campo
+        leftBoundary = BORDER_SIZE;
+        rightBoundary = w - (2*BORDER_SIZE);
+        topBoundary = BORDER_SIZE;
+        bottomBoundary = h - BORDER_SIZE;
+    }
 
     @Override
     public void onAccuracyChanged(android.hardware.Sensor sensor, int i) {
