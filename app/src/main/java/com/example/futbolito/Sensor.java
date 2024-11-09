@@ -28,7 +28,7 @@ public class Sensor extends View implements SensorEventListener {
     private static final float CIRCLE_RADIUS = 25;
     private static final float BORDER_SIZE = 50;
     private static final float FRICTION = 0.9f;
-    private static final int TIME_LIMIT = 3;
+    private static final int TIME_LIMIT = 60;
 
     // Lista de obstáculos dentro del campo
     private List<Obstacle> obstacles = new ArrayList<>();
@@ -47,10 +47,6 @@ public class Sensor extends View implements SensorEventListener {
 
     public Sensor(Context context) {
         super(context);
-
-        // Inicializa la pintura para el círculo
-        paint = new Paint();
-        paint.setColor(Color.BLUE);
 
         // Inicializa el Paint para el contador con fuente personalizada
         counterPaint = new Paint();
@@ -71,7 +67,28 @@ public class Sensor extends View implements SensorEventListener {
 
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+//****************************** CANCHA ************************
+        // Dibuja el fondo verde (cancha de fútbol)
+        Paint fieldPaint = new Paint();
+        fieldPaint.setColor(Color.parseColor("#0FCF40"));  // Establece el color verde para el fondo
+        canvas.drawRect(0, 0, getWidth(), getHeight(), fieldPaint);  // Dibuja el rectángulo que cubre toda la pantalla
 
+        // Dibuja las líneas blancas (líneas de la cancha)
+        Paint linePaint = new Paint();
+        linePaint.setColor(Color.WHITE);
+        linePaint.setStrokeWidth(5);  // Establece el grosor de las líneas
+
+        // Líneas de banda (fuera de los límites)
+        canvas.drawRect(leftBoundary, 0, rightBoundary, topBoundary, linePaint);  // Arriba
+        canvas.drawRect(leftBoundary, bottomBoundary, rightBoundary, getHeight(), linePaint);  // Abajo
+        canvas.drawRect(0, topBoundary, leftBoundary, bottomBoundary, linePaint);  // Izquierda
+        canvas.drawRect(getWidth(), topBoundary, rightBoundary, bottomBoundary, linePaint);  // Derecha
+
+        // Línea central vertical
+        float centerX = (leftBoundary + rightBoundary) / 2;
+        canvas.drawLine(centerX, topBoundary, centerX, bottomBoundary, linePaint);
+
+//****************************** MARCO ************************
         // Dibuja las áreas fuera de los límites del campo con relleno de color
         Paint fillPaint = new Paint();
         fillPaint.setColor(Color.GRAY);
@@ -83,9 +100,14 @@ public class Sensor extends View implements SensorEventListener {
         canvas.drawRect(0, 0, getWidth(), topBoundary, fillPaint);
         canvas.drawRect(0, bottomBoundary, getWidth(), getHeight(), fillPaint);
 
+//****************************** ESFERA ************************
+        // Inicializa la pintura para el círculo
+        paint = new Paint();
+        paint.setColor(Color.parseColor("#4A4A4A"));
         // Dibuja la circunferencia
         canvas.drawCircle(posX, posY, CIRCLE_RADIUS, paint);
 
+//****************************** TEXTOS PUNTAJE Y TIEMPO ************************
         // Dibuja el contador en la pantalla
         canvas.drawText("Tiempo: " + counter, (getWidth()/2)-350, 75, counterPaint);
         canvas.drawText("Goles: " + counterPlayer, (getWidth()/2) + 60, 75, counterPaint);
@@ -96,12 +118,18 @@ public class Sensor extends View implements SensorEventListener {
             canvas.drawText("Anota Aquí ", BORDER_SIZE*2, 75, counterPaint);
         }
 
-        // Dibuja los obstáculos
+//****************************** OBSTACULOS ************************
         Paint obstaclePaint = new Paint();
-        obstaclePaint.setColor(Color.RED);
+        obstaclePaint.setColor(Color.parseColor("#EBEBEB"));
         for (Obstacle obstacle : obstacles) {
+            obstaclePaint.setColor(Color.parseColor("#EBEBEB"));
             switch (obstacle.getShape()) {
                 case Obstacle.SHAPE_CIRCLE:
+                    if(obstacle.getX() > getWidth()/2){
+                        obstaclePaint.setColor(Color.parseColor("#0023F5"));
+                    }else{
+                        obstaclePaint.setColor(Color.parseColor("#FFFD55"));
+                    }
                     canvas.drawCircle(obstacle.getX(), obstacle.getY(), obstacle.getSize(), obstaclePaint);
                     break;
                 case Obstacle.SHAPE_HORIZONTAL_BAR:
@@ -281,32 +309,52 @@ public class Sensor extends View implements SensorEventListener {
 
     private void generateObstacles() {
         obstacles.clear();
+        float playerSize = 30;
 
-        // Jugadores del equipo izquierdo (defensores y delanteros)
-        float playerSize = 30; // Tamaño de los jugadores
-        float gapX = (rightBoundary - leftBoundary) / 6; // Espacio entre los jugadores en el eje X
-        float gapY = (bottomBoundary - topBoundary) / 4; // Espacio entre los jugadores en el eje Y
+        // Espacio entre los jugadores en el eje X y Y
+        float gapX = (rightBoundary - leftBoundary) / 6;
+        float gapY = (bottomBoundary - topBoundary) / 6;
 
-        // Defensores del equipo izquierdo
-        for (int i = 1; i <= 3; i++) {
-            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, leftBoundary + gapX, topBoundary + i * gapY, playerSize));
+        for (int i = 1; i < 3; i++) {
+            // Defensores en diagonal para el equipo izquierdo
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, leftBoundary + i * gapX, topBoundary + i * gapY, playerSize));
+        }
+        for (int i = 1; i < 3; i++) {
+            // Delanteros en diagonal para el equipo izquierdo
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, leftBoundary + (i + 3) * gapX, topBoundary + (i + 3) * gapY, playerSize));
+        }
+        for (int i = 1; i < 3; i++) {
+            // Defensores en diagonal para el equipo derecho
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, rightBoundary - i * gapX, topBoundary + i * gapY, playerSize));
+        }
+        for (int i = 1; i < 3; i++) {
+            // Delanteros en diagonal para el equipo derecho
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, rightBoundary - (i + 3) * gapX, topBoundary + (i + 3) * gapY, playerSize));
         }
 
-        // Delanteros del equipo izquierdo
-        for (int i = 1; i <= 3; i++) {
-            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, leftBoundary + 2 * gapX, topBoundary + i * gapY, playerSize));
+        gapX = (rightBoundary - leftBoundary) / 12; // Reducir el espacio entre los jugadores (12 jugadores)
+        gapY = (bottomBoundary - topBoundary) / 2;  // Alineación vertical
+
+        for (int i = 1; i < 5; i++) {
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, leftBoundary + i * gapX + 150, topBoundary + gapY, playerSize));
+        }
+        for (int i = 1; i < 5; i++) {
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, rightBoundary - i * gapX - 150, topBoundary + gapY, playerSize));
         }
 
-        // Jugadores del equipo derecho (defensores y delanteros)
-        // Defensores del equipo derecho
-        for (int i = 1; i <= 3; i++) {
-            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, rightBoundary - gapX, topBoundary + i * gapY, playerSize));
-        }
+        gapY = (bottomBoundary - topBoundary) / 4;  // Alineación vertical
 
-        // Delanteros del equipo derecho
-        for (int i = 1; i <= 3; i++) {
-            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, rightBoundary - 2 * gapX, topBoundary + i * gapY, playerSize));
-        }
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) - 200, topBoundary + gapY, playerSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) + 200, topBoundary + gapY, playerSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) - 200, (getHeight()/2) + 250, playerSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) + 200, (getHeight()/2) + 250, playerSize));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) - 400, (getHeight()/4), playerSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) + 400, (getHeight()/4), playerSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) - 400, (getHeight()/4)*3 + 50, playerSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, (getWidth()/2) + 400, (getHeight()/4) *3 + 50, playerSize));
+
+        gapY = (bottomBoundary - topBoundary) / 4; // Espacio entre los jugadores en el eje Y
 
         // Barras horizontales para delimitar áreas
         float barSize = 110;
