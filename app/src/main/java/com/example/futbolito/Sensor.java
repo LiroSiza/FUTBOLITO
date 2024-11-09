@@ -186,6 +186,7 @@ public class Sensor extends View implements SensorEventListener {
             resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
             counterPlayer1++;     // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
+            isPlayerOneTurn = true; // Turno del primer jugador
             // Puedes añadir efectos de sonido o alguna animación aquí
         }
 
@@ -193,6 +194,7 @@ public class Sensor extends View implements SensorEventListener {
             resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
             counterPlayer2++;     // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
+            isPlayerOneTurn = false; // Turno del segundo jugador
             // Puedes añadir efectos de sonido o alguna animación aquí
         }
 
