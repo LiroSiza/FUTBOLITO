@@ -23,6 +23,10 @@ public class Sensor extends View implements SensorEventListener {
     // Límites del campo de juego
     private float leftBoundary, rightBoundary, topBoundary, bottomBoundary;
 
+    // Contador
+    private int counter = 0;
+    private boolean isCounting = false;
+    private Thread counterThread;
 
     public Sensor(Context context) {
         super(context);
@@ -35,6 +39,9 @@ public class Sensor extends View implements SensorEventListener {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+
+        // Iniciar hilo para el contador
+        startCounter();
     }
 
     protected void onDraw(Canvas canvas) {
@@ -45,20 +52,20 @@ public class Sensor extends View implements SensorEventListener {
         fillPaint.setColor(Color.GRAY);
         fillPaint.setStyle(Paint.Style.FILL);
 
-        // Área izquierda (desde el borde izquierdo de la pantalla hasta la línea izquierda)
+        // Dibujo de bordes del campo de juego
         canvas.drawRect(0, 0, leftBoundary, getHeight(), fillPaint);
-
-        // Área derecha (desde la línea derecha hasta el borde derecho de la pantalla)
         canvas.drawRect(rightBoundary, 0, getWidth(), getHeight(), fillPaint);
-
-        // Área superior (desde el borde superior de la pantalla hasta la línea superior)
         canvas.drawRect(0, 0, getWidth(), topBoundary, fillPaint);
-
-        // Área inferior (desde la línea inferior hasta el borde inferior de la pantalla)
         canvas.drawRect(0, bottomBoundary, getWidth(), getHeight(), fillPaint);
 
         // Dibuja la circunferencia
         canvas.drawCircle(posX, posY, CIRCLE_RADIUS, paint);
+
+        // Dibuja el contador en la pantalla
+        Paint counterPaint = new Paint();
+        counterPaint.setColor(Color.WHITE);
+        counterPaint.setTextSize(60);
+        canvas.drawText("Tiempo: " + counter, 50, 100, counterPaint);
 
         // Actualiza la posición con los límites de la pantalla
         posX = Math.max(CIRCLE_RADIUS, Math.min(posX, getWidth() - CIRCLE_RADIUS));
@@ -69,9 +76,9 @@ public class Sensor extends View implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // La aceleración en el eje x e y
-        float accelX = event.values[0];
-        float accelY = event.values[1];
+        // Intercambiamos los valores de aceleración para que el movimiento funcione correctamente en modo horizontal
+        float accelX = -event.values[1];  // Invertir el valor de X para que el movimiento sea correcto
+        float accelY = event.values[0];   // El valor de Y se mantiene igual
 
         // Ajusta la velocidad con la fuerza del movimiento
         speedX -= accelX;
@@ -114,24 +121,22 @@ public class Sensor extends View implements SensorEventListener {
         }
     }
 
-
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {  // Cuando se cambia el tamaño de la vista
         super.onSizeChanged(w, h, oldw, oldh);
         // Inicializa la posición al centro de la pantalla
-        posX = (w / 2) - (BORDER_SIZE/2);
-        posY = h / 2;
+        posX = w / 2;
+        posY = (h / 2) + (BORDER_SIZE / 2);
 
         // Definir las líneas de delimitación del campo
         leftBoundary = BORDER_SIZE;
-        rightBoundary = w - (2*BORDER_SIZE);
-        topBoundary = BORDER_SIZE;
+        rightBoundary = w - BORDER_SIZE;
+        topBoundary = 2 * BORDER_SIZE;
         bottomBoundary = h - BORDER_SIZE;
     }
 
     @Override
     public void onAccuracyChanged(android.hardware.Sensor sensor, int i) {
-
     }
 
     public void unregisterSensor() {
@@ -144,6 +149,34 @@ public class Sensor extends View implements SensorEventListener {
 
     public void pause() {
         sensorManager.unregisterListener(this);
+        stopCounter();
     }
 
+    // Método para iniciar el hilo del contador
+    private void startCounter() {
+        isCounting = true;
+        counterThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isCounting) {
+                    try {
+                        Thread.sleep(1000);  // Espera 1 segundo
+                        counter++;  // Incrementa el contador
+                        postInvalidate();  // Actualiza la vista
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        counterThread.start();
+    }
+
+    // Método para detener el hilo del contador
+    private void stopCounter() {
+        isCounting = false;
+        if (counterThread != null) {
+            counterThread.interrupt();
+        }
+    }
 }
