@@ -34,6 +34,10 @@ public class Sensor extends View implements SensorEventListener {
     // Límites del campo de juego
     private float leftBoundary, rightBoundary, topBoundary, bottomBoundary;
 
+    // Puntuación
+    private int counterPlayer1 = 0;
+    private int counterPlayer2 = 0;
+
     // Contador
     private int counter = 0;
     private boolean isCounting = false;
@@ -82,6 +86,9 @@ public class Sensor extends View implements SensorEventListener {
 
         // Dibuja el contador en la pantalla
         canvas.drawText("Tiempo: " + counter, (getWidth()/2)-150, 75, counterPaint);
+        // Dibuja la puntuación de cada jugador
+        canvas.drawText("Jugador 1: " + counterPlayer1, BORDER_SIZE*2, 75, counterPaint);
+        canvas.drawText("Jugador 2: " + counterPlayer2, getWidth()-(getWidth()/5), 75, counterPaint);
 
         // Dibuja los obstáculos
         Paint obstaclePaint = new Paint();
@@ -115,6 +122,20 @@ public class Sensor extends View implements SensorEventListener {
         // Actualiza la posición con los límites de la pantalla
         posX = Math.max(CIRCLE_RADIUS, Math.min(posX, getWidth() - CIRCLE_RADIUS));
         posY = Math.max(CIRCLE_RADIUS, Math.min(posY, getHeight() - CIRCLE_RADIUS));
+
+        // Dibuja los límites de la portería izquierda
+        Paint goalPaint = new Paint();
+        goalPaint.setColor(Color.GREEN);
+        goalPaint.setStyle(Paint.Style.STROKE);
+        goalPaint.setStrokeWidth(5);
+
+        float goalTop = topBoundary + (getHeight() / 2) - 10;
+        float goalBottom = bottomBoundary - (getHeight() / 2) + 10;
+        float goalLeft = BORDER_SIZE + 100;
+        float goalRight = BORDER_SIZE;
+
+// Dibujar el rectángulo que representa el área de gol izquierda
+        canvas.drawRect(goalRight, goalTop, goalLeft, goalBottom, goalPaint);
 
         invalidate();  // Redibuja la vista
     }
@@ -167,6 +188,23 @@ public class Sensor extends View implements SensorEventListener {
             posY = bottomBoundary - CIRCLE_RADIUS;
             speedY = 0;
         }
+
+        if (isGoalLeft()) {
+            // Gol en la portería izquierda
+            resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
+            counterPlayer1++;            // Incrementar el contador o registrar el gol
+            postInvalidate();     // Actualizar la pantalla
+            // Puedes añadir efectos de sonido o alguna animación aquí
+        }
+
+        if (isGoalRight()) {
+            // Gol en la portería derecha
+            resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
+            counterPlayer2++;            // Incrementar el contador o registrar el gol
+            postInvalidate();     // Actualizar la pantalla
+            // Puedes añadir efectos de sonido o alguna animación aquí
+        }
+
     }
 
     @Override
@@ -235,16 +273,56 @@ public class Sensor extends View implements SensorEventListener {
     }
 
     private void generateObstacles() {
-        // Crear y agregar obstáculos
-        Obstacle obstacle1 = new Obstacle(Obstacle.SHAPE_CIRCLE, 200, 300, 40);
-        Obstacle obstacle2 = new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, 400, 500, 100);
-        Obstacle obstacle3 = new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, 600, 700, 80);
+        obstacles.clear();
 
-        obstacles.add(obstacle1);
-        obstacles.add(obstacle2);
-        obstacles.add(obstacle3);
+        // Jugadores del equipo izquierdo (defensores y delanteros)
+        float playerSize = 30; // Tamaño de los jugadores
+        float gapX = (rightBoundary - leftBoundary) / 6; // Espacio entre los jugadores en el eje X
+        float gapY = (bottomBoundary - topBoundary) / 4; // Espacio entre los jugadores en el eje Y
 
+        // Defensores del equipo izquierdo
+        for (int i = 1; i <= 3; i++) {
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, leftBoundary + gapX, topBoundary + i * gapY, playerSize));
+        }
+
+        // Delanteros del equipo izquierdo
+        for (int i = 1; i <= 3; i++) {
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, leftBoundary + 2 * gapX, topBoundary + i * gapY, playerSize));
+        }
+
+        // Jugadores del equipo derecho (defensores y delanteros)
+        // Defensores del equipo derecho
+        for (int i = 1; i <= 3; i++) {
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, rightBoundary - gapX, topBoundary + i * gapY, playerSize));
+        }
+
+        // Delanteros del equipo derecho
+        for (int i = 1; i <= 3; i++) {
+            obstacles.add(new Obstacle(Obstacle.SHAPE_CIRCLE, rightBoundary - 2 * gapX, topBoundary + i * gapY, playerSize));
+        }
+
+        // Barras horizontales para delimitar áreas
+        float barSize = 110;
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, leftBoundary + (barSize*2), topBoundary + 2 * gapY, barSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, rightBoundary - (barSize*2), bottomBoundary - 2 * gapY, barSize));
+
+        // Barras verticales para crear aperturas en el centro
+        float verticalBarSize = (bottomBoundary - topBoundary) / 5;
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, (rightBoundary + leftBoundary) / 2, topBoundary + verticalBarSize, verticalBarSize));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, (rightBoundary + leftBoundary) / 2, bottomBoundary - verticalBarSize, verticalBarSize));
+
+        // PORTERIAS
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, BORDER_SIZE + 100, topBoundary + (getHeight()/2) - 10, (verticalBarSize/3)));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, BORDER_SIZE + 100, bottomBoundary - (getHeight()/2) + 10, (verticalBarSize/3)));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, BORDER_SIZE * 2, topBoundary + (getHeight()/2) + 11, 100));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, BORDER_SIZE * 2, bottomBoundary - (getHeight()/2) - 11, 100));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  getWidth()- BORDER_SIZE - 100, topBoundary + (getHeight()/2) - 10, (verticalBarSize/3)));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, getWidth()- BORDER_SIZE - 100, bottomBoundary - (getHeight()/2) + 10, (verticalBarSize/3)));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR,  getWidth() - (BORDER_SIZE * 2), topBoundary + (getHeight()/2) + 11, 100));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, getWidth() - (BORDER_SIZE * 2), bottomBoundary - (getHeight()/2) - 11, 100));
     }
+
 
     private void checkCollisions() {
         for (Obstacle obstacle : obstacles) {
@@ -324,5 +402,35 @@ public class Sensor extends View implements SensorEventListener {
             speedX = -speedX * 0.5f;
         }
     }
+
+    private boolean isGoalLeft() {
+        float goalTop = topBoundary + (getHeight() / 2) - 10;
+        float goalBottom = bottomBoundary - (getHeight() / 2) + 10;
+        float goalLeft = BORDER_SIZE + 100;
+
+        // Verificar si la esfera está dentro del área de la portería izquierda
+        return (posX <= goalLeft) &&  // Está en el rango horizontal de la portería
+                (posY >= goalTop) && (posY <= goalBottom) && (posX >= BORDER_SIZE);
+    }
+
+    private boolean isGoalRight() {
+        float goalTop = topBoundary + (getHeight() / 2) - 10;
+        float goalBottom = bottomBoundary - (getHeight() / 2) + 10;
+        float goalRight = getWidth() - BORDER_SIZE - 100;
+
+        // Verificar si la esfera está dentro del área de la portería derecha
+        return (posX + CIRCLE_RADIUS >= goalRight) &&  // Está en el rango horizontal de la portería
+                (posY >= goalTop) && (posY <= goalBottom);
+    }
+
+
+    // En caso de querer posicionar la esfera como el inicio
+    private void resetBallPosition() {
+        posX = getWidth() / 2;
+        posY = getHeight() / 2;
+        speedX = 0;
+        speedY = 0;
+    }
+
 
 }
