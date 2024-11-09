@@ -1,6 +1,7 @@
 package com.example.futbolito;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -26,7 +27,7 @@ public class Sensor extends View implements SensorEventListener {
     private static final float CIRCLE_RADIUS = 25;
     private static final float BORDER_SIZE = 50;
     private static final float FRICTION = 0.9f;
-    private static final int TIME_LIMIT = 120;
+    private static final int TIME_LIMIT = 60;
 
     // Lista de obstáculos dentro del campo
     private List<Obstacle> obstacles = new ArrayList<>();
@@ -35,9 +36,8 @@ public class Sensor extends View implements SensorEventListener {
     private float leftBoundary, rightBoundary, topBoundary, bottomBoundary;
 
     // Puntuación
-    private int counterPlayer1 = 0;
-    private int counterPlayer2 = 0;
-    private boolean isPlayerOneTurn = true;
+    private int counterPlayer = 0;
+    private boolean isRightTurn = true;
 
     // Contador
     private int counter = 0;
@@ -86,10 +86,14 @@ public class Sensor extends View implements SensorEventListener {
         canvas.drawCircle(posX, posY, CIRCLE_RADIUS, paint);
 
         // Dibuja el contador en la pantalla
-        canvas.drawText("Tiempo: " + counter, (getWidth()/2)-150, 75, counterPaint);
+        canvas.drawText("Tiempo: " + counter, (getWidth()/2)-350, 75, counterPaint);
+        canvas.drawText("Goles: " + counterPlayer, (getWidth()/2) + 60, 75, counterPaint);
         // Dibuja la puntuación de cada jugador
-        canvas.drawText("Jugador 1: " + counterPlayer1, BORDER_SIZE*2, 75, counterPaint);
-        canvas.drawText("Jugador 2: " + counterPlayer2, getWidth()-(getWidth()/5), 75, counterPaint);
+        if(isRightTurn){
+            canvas.drawText("Anota Aquí ", getWidth()-(getWidth()/5), 75, counterPaint);
+        }else{
+            canvas.drawText("Anota Aquí ", BORDER_SIZE*2, 75, counterPaint);
+        }
 
         // Dibuja los obstáculos
         Paint obstaclePaint = new Paint();
@@ -182,19 +186,19 @@ public class Sensor extends View implements SensorEventListener {
             speedY = 0;
         }
 
-        if (isGoalLeft() && !isPlayerOneTurn) { // Gol de jugador 2 en Porteria izquierda
-            resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
-            counterPlayer1++;     // Incrementar el contador o registrar el gol
+        if (isGoalLeft() && !isRightTurn) { // Gol de jugador 2 en Porteria izquierda
+            //resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
+            counterPlayer++;     // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
-            isPlayerOneTurn = true; // Turno del primer jugador
+            isRightTurn = true; // Turno del primer jugador
             // Puedes añadir efectos de sonido o alguna animación aquí
         }
 
-        if (isGoalRight() && isPlayerOneTurn) { // Gol de jugador 1 en Porteria derecha
-            resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
-            counterPlayer2++;     // Incrementar el contador o registrar el gol
+        if (isGoalRight() && isRightTurn) { // Gol de jugador 1 en Porteria derecha
+            //resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
+            counterPlayer++;     // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
-            isPlayerOneTurn = false; // Turno del segundo jugador
+            isRightTurn = false; // Turno del segundo jugador
             // Puedes añadir efectos de sonido o alguna animación aquí
         }
 
@@ -247,6 +251,11 @@ public class Sensor extends View implements SensorEventListener {
                         postInvalidate();  // Actualiza la vista
                         if (counter == TIME_LIMIT) { // Terminar juego
                             isCounting = false;
+
+                            // Aquí se lanza la nueva actividad final con los datos extra
+                            Intent intent = new Intent(getContext(), GameOver.class);
+                            intent.putExtra("player_score", counterPlayer);  // Puntos de jugador 1
+                            getContext().startActivity(intent);  // Inicia la actividad
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -398,12 +407,12 @@ public class Sensor extends View implements SensorEventListener {
 
     private boolean isGoalLeft() {
         // Verificar si la esfera está dentro del área de la portería izquierda
-        return (posX <= BORDER_SIZE + 50);
+        return (posX <= BORDER_SIZE + 50) && (posY >= bottomBoundary - (getHeight()/2) - 11) && (posY <= topBoundary + (getHeight()/2) + 11);
     }
 
     private boolean isGoalRight() {
         // Verificar si la esfera está dentro del área de la portería derecha
-        return (posX >= getWidth() - BORDER_SIZE - 50);
+        return (posX >= getWidth() - BORDER_SIZE - 50) && ( posY >= bottomBoundary - (getHeight()/2) - 11) && (posY <= topBoundary + (getHeight()/2) + 11);
     }
 
 
