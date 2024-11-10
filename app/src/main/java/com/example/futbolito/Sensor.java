@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -78,11 +79,35 @@ public class Sensor extends View implements SensorEventListener {
         linePaint.setColor(Color.WHITE);
         linePaint.setStrokeWidth(5);  // Establece el grosor de las líneas
 
-        // Líneas de banda (fuera de los límites)
-        canvas.drawRect(leftBoundary, 0, rightBoundary, topBoundary, linePaint);  // Arriba
-        canvas.drawRect(leftBoundary, bottomBoundary, rightBoundary, getHeight(), linePaint);  // Abajo
-        canvas.drawRect(0, topBoundary, leftBoundary, bottomBoundary, linePaint);  // Izquierda
-        canvas.drawRect(getWidth(), topBoundary, rightBoundary, bottomBoundary, linePaint);  // Derecha
+        // Areas de porteria
+        canvas.drawLine(getWidth()/8, getHeight()/3, getWidth()/8, ((getHeight()/3)*2)+BORDER_SIZE, linePaint);
+        canvas.drawLine(BORDER_SIZE, getHeight()/3, getWidth()/8, getHeight()/3, linePaint);
+        canvas.drawLine(BORDER_SIZE, ((getHeight()/3)*2)+BORDER_SIZE, getWidth()/8, ((getHeight()/3)*2)+BORDER_SIZE, linePaint);
+
+        canvas.drawLine((getWidth()/8)*7+6, getHeight()/3, (getWidth()/8)*7+6, ((getHeight()/3)*2)+BORDER_SIZE, linePaint);
+        canvas.drawLine(getWidth() - BORDER_SIZE, getHeight()/3, getWidth()-(getWidth()/8), getHeight()/3, linePaint);
+        canvas.drawLine(getWidth() - BORDER_SIZE, ((getHeight()/3)*2)+BORDER_SIZE, getWidth()-(getWidth()/8), ((getHeight()/3)*2)+BORDER_SIZE, linePaint);
+
+        // Esquinas
+        // Definir el rectángulo que limita el arco
+        Paint paintArc = new Paint();
+        paintArc.setColor(Color.WHITE);
+        paintArc.setStrokeWidth(5);
+        paintArc.setStyle(Paint.Style.STROKE);
+
+        // Primer arco
+        RectF rectF = new RectF(0, BORDER_SIZE, BORDER_SIZE * 2, getHeight() - (getHeight() - BORDER_SIZE * 3));
+        canvas.drawArc(rectF, 0, 90, false, paintArc);
+        // Segundo arco (esquina inferior izquierda)
+        RectF rectF2 = new RectF(0, getHeight() - BORDER_SIZE * 2, BORDER_SIZE * 2, getHeight());
+        canvas.drawArc(rectF2, 270, 90, false, paintArc);
+        // Tercer arco (esquina superior derecha)
+        RectF rectF3 = new RectF(getWidth() - BORDER_SIZE * 2, BORDER_SIZE, getWidth(), BORDER_SIZE * 3);
+        canvas.drawArc(rectF3, 90, 90, false, paintArc);
+        // Cuarto arco (esquina inferior derecha)
+        RectF rectF4 = new RectF(getWidth() - BORDER_SIZE * 2, getHeight() - BORDER_SIZE * 2, getWidth(), getHeight());
+        canvas.drawArc(rectF4, 180, 90, false, paintArc);
+
 
         // Línea central vertical
         float centerX = (leftBoundary + rightBoundary) / 2;
