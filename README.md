@@ -1,6 +1,6 @@
 # FUTBOLITO
 
-Futbolito es un juego interactivo en el cual los jugadores controlan una esfera, que simula un balón de fútbol, utilizando los sensores de su dispositivo móvil. El objetivo es anotar la mayor cantidad de goles en un campo lleno de obstáculos en un tiempo determinado, alternando entre las porterías con cada gol. El juego presenta una dificultad adicional con obstáculos y jugadores que deben ser esquivados para llegar a la portería.
+Futbolito es un juego interactivo en el cual un jugador controla una esfera, que simula un balón de fútbol, utilizando los sensores de su dispositivo móvil. El objetivo es anotar la mayor cantidad de goles en un campo lleno de obstáculos en un tiempo determinado, alternando entre las porterías con cada gol. El juego presenta una dificultad adicional con obstáculos y jugadores que deben ser esquivados para llegar a la portería.
 
 ## Características
 
@@ -20,7 +20,11 @@ El objetivo es controlar la esfera (balón) utilizando los movimientos del dispo
 2. **Anota goles** en la portería indicada por el juego. Después de cada gol, el juego alterna la portería donde debes anotar.
 3. **Evita los obstáculos** que están distribuidos en el campo. Si la esfera choca con un obstáculo, su velocidad disminuirá y se ajustará su posición.
 4. **Sigue el tiempo**: En la parte superior de la pantalla se muestra un cronómetro con el tiempo restante y la cantidad de goles que has anotado.
-5. **Finaliza el juego** cuando el tiempo se agote. El jugador con la mayor cantidad de goles anotados será el ganador.
+5. **Finaliza el juego** cuando el tiempo se agote. Se mostrará la cantidad de goles anotados por el juagdor.
+
+## Imágenes dentro del juego
+![Campo del juego](images/campo.jpg)
+![Pantalla final](images/gameover.jpg)
 
 ## Funcionalidades adicionales
 
