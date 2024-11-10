@@ -54,7 +54,7 @@ Si deseas contribuir a este proyecto, por favor haz un fork del repositorio y en
 
 ## Licencia
 
-Este proyecto está licenciado bajo la Licencia MIT.
+Este proyecto está licenciado bajo la Licencia Apache 2.0.
 
 ## Autor
 
