@@ -523,7 +523,6 @@ public class Sensor extends View implements SensorEventListener {
             } else {
                 posX = right + CIRCLE_RADIUS;
             }
-
             // Invertir la velocidad horizontal
             speedX = -speedX * 0.5f;
         }
