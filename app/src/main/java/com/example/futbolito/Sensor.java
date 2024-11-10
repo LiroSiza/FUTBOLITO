@@ -108,10 +108,35 @@ public class Sensor extends View implements SensorEventListener {
         RectF rectF4 = new RectF(getWidth() - BORDER_SIZE * 2, getHeight() - BORDER_SIZE * 2, getWidth(), getHeight());
         canvas.drawArc(rectF4, 180, 90, false, paintArc);
 
+        RectF rectF5 = new RectF(getWidth()/12-2, getHeight()/3+100, (getWidth()/12) + 200, getHeight()/3+300);
+        canvas.drawArc(rectF5, 270, 180, false, paintArc);
+        RectF rectF6 = new RectF(getWidth()-(getWidth()/12)-200, getHeight()/3+100, getWidth()-(getWidth()/12), getHeight()/3+300);
+        canvas.drawArc(rectF6, 90, 180, false, paintArc);
+
+        // Pintura para el círculo central
+        Paint centerCirclePaint = new Paint();
+        centerCirclePaint.setColor(Color.WHITE);
+        centerCirclePaint.setStyle(Paint.Style.STROKE);
+        centerCirclePaint.setStrokeWidth(5);
+
+        // Coordenadas del centro del campo
+        float centerX = (leftBoundary + rightBoundary) / 2;
+        float centerY = (topBoundary + bottomBoundary) / 2;
+        float centerCircleRadius = 150;
+        canvas.drawCircle(centerX, centerY, centerCircleRadius, centerCirclePaint);
 
         // Línea central vertical
-        float centerX = (leftBoundary + rightBoundary) / 2;
+        centerX = (leftBoundary + rightBoundary) / 2;
         canvas.drawLine(centerX, topBoundary, centerX, bottomBoundary, linePaint);
+
+        // Pintura para el contorno del campo
+        Paint boundaryPaint = new Paint();
+        boundaryPaint.setColor(Color.WHITE);
+        boundaryPaint.setStyle(Paint.Style.STROKE);
+        boundaryPaint.setStrokeWidth(10); // Grosor del contorno
+
+// Dibuja el contorno del campo
+        canvas.drawRect(leftBoundary, topBoundary, rightBoundary, bottomBoundary, boundaryPaint);
 
 //****************************** MARCO ************************
         // Dibuja las áreas fuera de los límites del campo con relleno de color
