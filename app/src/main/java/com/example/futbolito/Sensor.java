@@ -42,7 +42,7 @@ public class Sensor extends View implements SensorEventListener {
     private boolean isRightTurn = true;
 
     // Contador
-    private int counter = 60;
+    private int counter = TIME_LIMIT;
     private boolean isCounting = false;
     private Thread counterThread;
 
