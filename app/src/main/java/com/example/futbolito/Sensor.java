@@ -42,7 +42,7 @@ public class Sensor extends View implements SensorEventListener {
     private boolean isRightTurn = true;
 
     // Contador
-    private int counter = 0;
+    private int counter = 60;
     private boolean isCounting = false;
     private Thread counterThread;
 
@@ -315,9 +315,9 @@ public class Sensor extends View implements SensorEventListener {
                 while (isCounting) {
                     try {
                         Thread.sleep(1000);  // Espera 1 segundo
-                        counter++;  // Incrementa el contador
+                        counter--;  // Incrementa el contador
                         postInvalidate();  // Actualiza la vista
-                        if (counter == TIME_LIMIT) { // Terminar juego
+                        if (counter == 0) { // Terminar juego
                             isCounting = false;
 
                             // Aquí se lanza la nueva actividad final con los datos extra
