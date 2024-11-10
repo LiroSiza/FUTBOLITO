@@ -135,7 +135,7 @@ public class Sensor extends View implements SensorEventListener {
         boundaryPaint.setStyle(Paint.Style.STROKE);
         boundaryPaint.setStrokeWidth(10); // Grosor del contorno
 
-// Dibuja el contorno del campo
+        // Dibuja el contorno del campo
         canvas.drawRect(leftBoundary, topBoundary, rightBoundary, bottomBoundary, boundaryPaint);
 
 //****************************** MARCO ************************
@@ -161,7 +161,6 @@ public class Sensor extends View implements SensorEventListener {
         // Dibuja el contador en la pantalla
         canvas.drawText("Tiempo: " + counter, (getWidth()/2)-350, 75, counterPaint);
         canvas.drawText("Goles: " + counterPlayer, (getWidth()/2) + 60, 75, counterPaint);
-        // Dibuja la puntuación de cada jugador
         if(isRightTurn){
             canvas.drawText("Anota Aquí ", getWidth()-(getWidth()/5), 75, counterPaint);
         }else{
@@ -207,20 +206,13 @@ public class Sensor extends View implements SensorEventListener {
         posX = Math.max(CIRCLE_RADIUS, Math.min(posX, getWidth() - CIRCLE_RADIUS));
         posY = Math.max(CIRCLE_RADIUS, Math.min(posY, getHeight() - CIRCLE_RADIUS));
 
-        // Dibuja los límites de la portería izquierda
-        Paint goalPaint = new Paint();
-        goalPaint.setColor(Color.GREEN);
-        goalPaint.setStyle(Paint.Style.STROKE);
-        goalPaint.setStrokeWidth(5);
-
         invalidate();  // Redibuja la vista
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // Intercambiamos los valores de aceleración para que el movimiento funcione correctamente en modo horizontal
-        float accelX = -event.values[1];  // Invertir el valor de X para que el movimiento sea correcto
-        float accelY = event.values[0];   // El valor de Y se mantiene igual
+        float accelX = -event.values[1];
+        float accelY = event.values[0];
 
         // Ajusta la velocidad con la fuerza del movimiento
         speedX -= accelX;
@@ -265,22 +257,19 @@ public class Sensor extends View implements SensorEventListener {
             speedY = 0;
         }
 
-        if (isGoalLeft() && !isRightTurn) { // Gol de jugador 2 en Porteria izquierda
+        if (isGoalLeft() && !isRightTurn) {
             //resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
-            counterPlayer++;     // Incrementar el contador o registrar el gol
+            counterPlayer++;      // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
-            isRightTurn = true; // Turno del primer jugador
-            // Puedes añadir efectos de sonido o alguna animación aquí
+            isRightTurn = true;
         }
 
-        if (isGoalRight() && isRightTurn) { // Gol de jugador 1 en Porteria derecha
+        if (isGoalRight() && isRightTurn) {
             //resetBallPosition();  // Opcional: Reinicia la posición de la esfera al centro
-            counterPlayer++;     // Incrementar el contador o registrar el gol
+            counterPlayer++;      // Incrementar el contador o registrar el gol
             postInvalidate();     // Actualizar la pantalla
-            isRightTurn = false; // Turno del segundo jugador
-            // Puedes añadir efectos de sonido o alguna animación aquí
+            isRightTurn = false;
         }
-
     }
 
     @Override
@@ -296,7 +285,7 @@ public class Sensor extends View implements SensorEventListener {
         topBoundary = 2 * BORDER_SIZE;
         bottomBoundary = h - BORDER_SIZE;
 
-        // Generar obstáculos aleatoriamente
+        // Generar obstáculos
         generateObstacles();
     }
 
@@ -426,8 +415,40 @@ public class Sensor extends View implements SensorEventListener {
         obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR, getWidth()- BORDER_SIZE - 100, bottomBoundary - (getHeight()/2) + 10, (verticalBarSize/3)));
         obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR,  getWidth() - (BORDER_SIZE * 2), topBoundary + (getHeight()/2) + 11, 100));
         obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, getWidth() - (BORDER_SIZE * 2), bottomBoundary - (getHeight()/2) - 11, 100));
-    }
 
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  getWidth()/10 ,getHeight()-120, 130));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*4 ,getHeight()-120, 130));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*2 ,getHeight()-90, 80));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*8 ,getHeight()-90, 80));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*6 ,getHeight()-120, 130));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*9 ,getHeight()-120, 130));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  getWidth()/10 ,BORDER_SIZE + 120, 130));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*4 ,BORDER_SIZE + 120, 130));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*2 ,BORDER_SIZE + 90, 80));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*8 ,BORDER_SIZE + 90, 80));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*6 ,BORDER_SIZE + 120, 130));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/10)*9 ,BORDER_SIZE + 120, 130));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, getWidth()/5, topBoundary + (getHeight()/2) + BORDER_SIZE, 200));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, getWidth()/5, (getHeight()/2) - BORDER_SIZE*2 - 11, 200));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, (getWidth()/5)*4, topBoundary + (getHeight()/2) + BORDER_SIZE, 200));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, (getWidth()/5)*4, (getHeight()/2) - BORDER_SIZE*2 - 11, 200));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/4)+50 ,getHeight()-250, 240));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/4)*3-50 ,getHeight()-250, 240));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/4)+50 ,BORDER_SIZE + 250, 240));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/4)*3-50 ,BORDER_SIZE + 250, 240));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/3)+(getWidth()/10)-20 ,BORDER_SIZE*5 + 320, 350));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_VERTICAL_BAR,  (getWidth()/3)*2-(getWidth()/10)+20 ,BORDER_SIZE*5 + 320, 350));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, (getWidth()/3)+(getWidth()/10)-20, (getHeight()/2) - BORDER_SIZE*3, 200));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, (getWidth()/3)*2-(getWidth()/10)+20, (getHeight()/2) - BORDER_SIZE*3, 200));
+
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, (getWidth()/3)+(getWidth()/10)-20, BORDER_SIZE*8 + 340, 200));
+        obstacles.add(new Obstacle(Obstacle.SHAPE_HORIZONTAL_BAR, (getWidth()/3)*2-(getWidth()/10)+20, BORDER_SIZE*8 +340, 200));
+    }
 
     private void checkCollisions() {
         for (Obstacle obstacle : obstacles) {
@@ -518,7 +539,6 @@ public class Sensor extends View implements SensorEventListener {
         return (posX >= getWidth() - BORDER_SIZE - 50) && ( posY >= bottomBoundary - (getHeight()/2) - 11) && (posY <= topBoundary + (getHeight()/2) + 11);
     }
 
-
     // En caso de querer posicionar la esfera como el inicio
     private void resetBallPosition() {
         posX = getWidth() / 2;
@@ -526,6 +546,4 @@ public class Sensor extends View implements SensorEventListener {
         speedX = 0;
         speedY = 0;
     }
-
-
 }
