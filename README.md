@@ -43,7 +43,7 @@ El objetivo es controlar la esfera (balón) utilizando los movimientos del dispo
 1. Clona el repositorio:
 
     ```bash
-    git clone https://github.com/tu-usuario/futbolito.git
+    git clone https://github.com/LiroSiza/futbolito.git
     ```
 
 2. Abre el proyecto en Android Studio.
